@@ -15,19 +15,26 @@ TypeScript is a super-set of JavaScript that adds static types to the language. 
 You also need to have Node.js and NPM installed on your machine, if they are not installed on your system, you simply need to head to the [official website](https://nodejs.org/) and grab the binaries for your system or refer to your operating system instructions for installing Node.js via the official package manager of your system.
 
 
-Next clone the repository using
+Next, clone the repository using
 
 ```
 git clone https://github.com/techiediaries/nestjs-chatkit.git
 
 ```
 
-Finally navigate inside the project's folder and install the dependenices:
+Next, navigate inside the project's folder and install the dependenices:
 
 ```bash
 cd nestjs-chatkit
 npm install
 ```
+
+Finally, start the development server using:
+
+```
+npm start
+```
+
 
 ## Built With
 
