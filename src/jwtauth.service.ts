@@ -1,7 +1,6 @@
 import { Injectable } from '@nestjs/common';
-//import { JwtService } from '@nestjs/jwt';
+import { JwtService } from '@nestjs/jwt';
 import { UserService } from './user.service';
-//import { JwtPayload } from './jwt-payload.interface';
 import { User } from './user/user.entity';
 import Chatkit, { AuthenticationResponse } from '@pusher/chatkit-server';
 
@@ -9,8 +8,8 @@ import Chatkit, { AuthenticationResponse } from '@pusher/chatkit-server';
 export class JwtauthService {
   chatkit: Chatkit;
   constructor(
-    private readonly userService: UserService
-    /*private readonly jwtService: JwtService,*/
+    private readonly userService: UserService,
+    private readonly jwtService: JwtService
   ) {
     this.chatkit = new Chatkit({
       instanceLocator: "v1:us1:8974881e-3870-47b4-9053-14dad6c0e314",
@@ -18,23 +17,10 @@ export class JwtauthService {
     })    
   }
 
-  /*async register(): void {
-  }
-
-  async login(): void {
-  }
-
-  async validateUser(payload: JwtPayload): void {
-  }*/
-
-  private getToken(userData: User): AuthenticationResponse {
+  public getToken(userId: string): AuthenticationResponse {
     
-    /*const accessToken = this.jwtService.sign(userData);
-    return {
-      expiresIn: 3600,
-      accessToken,
-    };*/
-    return this.chatkit.authenticate({ userId: 'user' + userData.id });
+    console.log('authenticating ', userId);
+    return this.chatkit.authenticate({ userId: userId});
   }  
 
   private async validateUser(userData: User): Promise<User> {
@@ -44,15 +30,42 @@ export class JwtauthService {
 
   private async createUser(userData: User): Promise<User>{
     return this.userService.create(userData).then(user =>{
-      return this.chatkit.createUser({id: 'user' + user.id, name: userData.name});
+      const userId = `${userData.name}${userData.id}`;
+      const roomId = "19374915";
+      const avatarURL = "https://image.flaticon.com/icons/png/128/149/149071.png";
+
+      return this.chatkit.createUser({id: userId, 
+         name: userData.name,
+         avatarURL: avatarURL
+      }).then(()=>{
+
+        return this.chatkit.addUsersToRoom({ roomId: roomId,
+          userIds: [userId]}).then(()=>{
+            return user;
+        });
+        
+      })
+
     });
 
   }
 
-  public async login(user: User): Promise<AuthenticationResponse>{
-    return this.validateUser(user).then(()=>{
 
-      return this.getToken(user);
+  public async login(user: User): Promise<any | {status: number}>{
+    console.log('validate user');
+    return this.validateUser(user).then((userInfo)=>{
+      console.log(userInfo);
+      if(!userInfo){
+        return { status: 404 };
+      }
+      let userId = `${userInfo.name}${userInfo.id}`;
+      const accessToken = this.jwtService.sign(userId);
+      return {
+         expires_in: 3600,
+         access_token: accessToken,
+         user_id: userId,
+         status: 200
+      };
     });
   }
   public async register(user: User): Promise<any>{

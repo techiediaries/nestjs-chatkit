@@ -1,19 +1,11 @@
-import { Get, Post, Body, Controller} from '@nestjs/common';
-//import { JwtService } from '@nestjs/jwt';
+import { Get, Post, Body,Request, Controller} from '@nestjs/common';
 import { JwtauthService } from './jwtauth.service';
-import { UserService } from './user.service';
 import { AppService } from './app.service';
-
-//import { JwtPayload } from './jwt-payload.interface';
 import { User } from 'user/user.entity';
-//import { access } from 'fs';
-//import { AuthGuard } from '@nestjs/passport';
-
-//import Chatkit, { AuthenticationResponse } from '@pusher/chatkit-server';
 
 @Controller()
 export class AppController {
-  constructor(private readonly appService: AppService, private readonly userService: UserService, private readonly authService: JwtauthService) {
+  constructor(private readonly appService: AppService, private readonly authService: JwtauthService) {
 
 
 
@@ -24,9 +16,15 @@ export class AppController {
     return this.appService.root();
   }
 
- 
+  @Post('token')
+  async token(@Request() req): Promise<any> {
+    console.log("got ", req.query.user_id);
+    return this.authService.getToken(req.query.user_id).body;
+  }
+
   @Post('login')
-  async login(@Body() userData: User): Promise<any> {
+  async login(@Body() userData): Promise<any> {
+    console.log("got ", userData);
     return this.authService.login(userData);
   }  
 
@@ -35,10 +33,10 @@ export class AppController {
     console.log(userData);    
     return this.authService.register(userData);
   }  
-  @Get('users')
+  /*@Get('users')
   async users(): Promise<User[]> {
     return this.userService.findAll();
-  }  
+  }*/  
   
 
   
